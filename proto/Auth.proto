@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option go_package = "github.com/koliader/posts-gateway";
+import "google/api/annotations.proto";
+
+service Auth{
+  rpc Resgietr(RegisterReq) returns (AuthRes) {
+    option (google.api.http) = {
+      post: "/v1/auth/register"
+      body: "*"
+    };
+  }
+  rpc Login(LoginReq) returns (AuthRes) {
+    option (google.api.http) = {
+      post: "/v1/auth/login"
+      body: "*"
+    };
+  }
+}
+
+message AuthRes {
+  string Token = 1;
+}
+
+message RegisterReq {
+  string Email = 1;
+  string Username = 2;
+  string Password = 3;
+}
+
+message LoginReq {
+  string Email = 1;
+  string Password = 3;
+}
+
