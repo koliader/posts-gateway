@@ -13,3 +13,4 @@ message PostEntity {
   string Body = 2;
   UserEntity owner = 3;
 }
+message Empty {}

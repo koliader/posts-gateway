@@ -33,7 +33,7 @@ type AuthClient struct {
 	config util.Config
 }
 
-func (ac AuthClient) prepareAuthGrpcClient(c *context.Context) error {
+func (ac *AuthClient) PrepareAuthGrpcClient(c *context.Context) error {
 	conn, err := grpc.DialContext(*c, ac.config.AuthGrpcService, []grpc.DialOption{
 		grpc.WithInsecure(),
 		grpc.WithBlock()}...)
@@ -56,7 +56,7 @@ func (ac AuthClient) prepareAuthGrpcClient(c *context.Context) error {
 // * this functions calls gRPC service function
 func (ac *AuthClient) Register(c *context.Context, req RegisterReq) (*pb.AuthRes, error) {
 	// connect auth grpc service
-	if err := ac.prepareAuthGrpcClient(c); err != nil {
+	if err := ac.PrepareAuthGrpcClient(c); err != nil {
 		return nil, err
 	}
 
@@ -76,7 +76,7 @@ func (ac *AuthClient) Register(c *context.Context, req RegisterReq) (*pb.AuthRes
 
 func (ac *AuthClient) Login(ctx *context.Context, req LoginReq) (*pb.AuthRes, error) {
 	// connect auth grpc service
-	if err := ac.prepareAuthGrpcClient(ctx); err != nil {
+	if err := ac.PrepareAuthGrpcClient(ctx); err != nil {
 		return nil, err
 	}
 
@@ -85,6 +85,19 @@ func (ac *AuthClient) Login(ctx *context.Context, req LoginReq) (*pb.AuthRes, er
 		Password: req.Password,
 	}
 	res, err := authGrpcServiceClient.Login(*ctx, &arg)
+	if err != nil {
+		return nil, errors.New(status.Convert(err).Message())
+	}
+	return res, nil
+}
+
+func (ac *AuthClient) ListUsers(ctx *context.Context) (*pb.ListUsersRes, error) {
+	if err := ac.PrepareAuthGrpcClient(ctx); err != nil {
+		return nil, err
+	}
+
+	arg := pb.Empty{}
+	res, err := authGrpcServiceClient.ListUsers(*ctx, &arg)
 	if err != nil {
 		return nil, errors.New(status.Convert(err).Message())
 	}

@@ -1,21 +1,12 @@
 syntax = "proto3";
 
 option go_package = "github.com/koliader/posts-gateway/internal/pb";
-import "google/api/annotations.proto";
+import "Entities.proto";
 
 service Auth {
-  rpc Register(RegisterReq) returns (AuthRes) {
-    option (google.api.http) = {
-      post: "/v1/auth/register"
-      body: "*"
-    };
-  }
-  rpc Login(LoginReq) returns (AuthRes) {
-    option (google.api.http) = {
-      post: "/v1/auth/login"
-      body: "*"
-    };
-  }
+  rpc Register(RegisterReq) returns (AuthRes) {}
+  rpc Login(LoginReq) returns (AuthRes) {}
+  rpc ListUsers(Empty) returns (ListUsersRes) {}
 }
 
 message AuthRes {
@@ -31,4 +22,8 @@ message RegisterReq {
 message LoginReq {
   string Email = 1;
   string Password = 2;
+}
+
+message ListUsersRes {
+  repeated UserEntity users = 1;
 }

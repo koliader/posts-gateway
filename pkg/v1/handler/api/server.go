@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -54,5 +55,15 @@ func (s *Server) setupRouter() {
 	s.router = router
 }
 func (s *Server) Start(address string) error {
+	// Create a context
+	ctx := context.Background()
+
+	// try to connect auth service
+	authClient := service.AuthClient{}
+	if err := authClient.PrepareAuthGrpcClient(&ctx); err != nil {
+		return err
+	}
+
+	// Start the server
 	return s.router.Run(address)
 }

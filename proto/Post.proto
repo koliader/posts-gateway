@@ -2,27 +2,11 @@ syntax = "proto3";
 
 option go_package = "github.com/koliader/posts-gateway/internal/pb";
 import "Entities.proto";
-import "google/api/annotations.proto";
 
 service Post {
-  rpc CreatePost(CreatePostReq) returns (CreatePostRes) {
-    option (google.api.http) = {
-      post: "/v1/craetePost"
-      body: "*"
-    };
-  }
-  rpc GetPost(GetPostReq) returns (GetPostRes) {
-    option (google.api.http) = {
-      post: "/v1/getPost"
-      body: "*"
-    };
-  }
-  rpc ListPosts(Empty) returns (ListPostsRes) {
-    option (google.api.http) = {
-      post: "/v1/lisPosts"
-      body: "*"
-    };
-  }
+  rpc CreatePost(CreatePostReq) returns (CreatePostRes) {}
+  rpc GetPost(GetPostReq) returns (GetPostRes) {}
+  rpc ListPosts(Empty) returns (ListPostsRes) {}
 }
 
 message CreatePostReq {
@@ -42,8 +26,6 @@ message GetPostReq {
 message GetPostRes {
   PostEntity Post = 1;
 }
-
-message Empty {}
 
 message ListPostsRes {
   repeated PostEntity Posts = 1;
