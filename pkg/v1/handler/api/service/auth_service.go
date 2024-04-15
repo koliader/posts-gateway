@@ -7,10 +7,15 @@ import (
 	"github.com/koliader/posts-gateway/internal/pb"
 	"github.com/koliader/posts-gateway/internal/util"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 // * requests
+type AuthRes struct {
+	Token string `json:"token" binding:"required,jwt"`
+}
+
 type RegisterReq struct {
 	Email    string `json:"email" binding:"required,email"`
 	Username string `json:"username" binding:"required"`
@@ -60,10 +65,10 @@ func (ac *AuthClient) PrepareAuthGrpcClient(c *context.Context) error {
 }
 
 // * this functions calls gRPC service function
-func (ac *AuthClient) Register(c *context.Context, req RegisterReq) (*pb.AuthRes, error) {
+func (ac *AuthClient) Register(c *context.Context, req RegisterReq) (res *pb.AuthRes, err error, code *codes.Code) {
 	// connect auth grpc service
 	if err := ac.PrepareAuthGrpcClient(c); err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
 	arg := pb.RegisterReq{
@@ -72,40 +77,46 @@ func (ac *AuthClient) Register(c *context.Context, req RegisterReq) (*pb.AuthRes
 		Password: req.Password,
 	}
 	// res returns token
-	res, err := authGrpcServiceClient.Register(*c, &arg)
+	res, err = authGrpcServiceClient.Register(*c, &arg)
 	if err != nil {
-		return nil, errors.New(status.Convert(err).Message())
+		grpcStatus, _ := status.FromError(err)
+		grpcCode := grpcStatus.Code()
+
+		return nil, errors.New(status.Convert(err).Message()), &grpcCode
 	}
 	// returning res
-	return res, nil
+	return res, nil, nil
 }
 
-func (ac *AuthClient) Login(ctx *context.Context, req LoginReq) (*pb.AuthRes, error) {
+func (ac *AuthClient) Login(ctx *context.Context, req LoginReq) (res *pb.AuthRes, err error, code *codes.Code) {
 	// connect auth grpc service
 	if err := ac.PrepareAuthGrpcClient(ctx); err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
 	arg := pb.LoginReq{
 		Email:    req.Email,
 		Password: req.Password,
 	}
-	res, err := authGrpcServiceClient.Login(*ctx, &arg)
+	res, err = authGrpcServiceClient.Login(*ctx, &arg)
 	if err != nil {
-		return nil, errors.New(status.Convert(err).Message())
+		grpcCode := getErrorCode(err)
+
+		return nil, errors.New(status.Convert(err).Message()), &grpcCode
 	}
-	return res, nil
+	return res, nil, nil
 }
 
-func (ac *AuthClient) ListUsers(ctx *context.Context) (*pb.ListUsersRes, error) {
+func (ac *AuthClient) ListUsers(ctx *context.Context) (res *pb.ListUsersRes, err error, code *codes.Code) {
 	if err := ac.PrepareAuthGrpcClient(ctx); err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
 	arg := pb.Empty{}
-	res, err := authGrpcServiceClient.ListUsers(*ctx, &arg)
+	res, err = authGrpcServiceClient.ListUsers(*ctx, &arg)
 	if err != nil {
-		return nil, errors.New(status.Convert(err).Message())
+		grpcCode := getErrorCode(err)
+		return nil, errors.New(status.Convert(err).Message()), &grpcCode
 	}
-	return res, nil
+	return res, nil, nil
 }

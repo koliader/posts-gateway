@@ -2,10 +2,12 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 	"regexp"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/codes"
 )
 
 func errorResponse(err error) gin.H {
@@ -69,4 +71,19 @@ func errorInvalidArguments(err error) gin.H {
 		return gin.H{"error": parsedErrors[0]}
 	}
 	return gin.H{"error": err.Error()}
+}
+
+func errorCode(code codes.Code) int {
+	var httpCode int
+	switch code {
+	case codes.AlreadyExists:
+		{
+			httpCode = http.StatusBadRequest
+		}
+	case codes.Unimplemented:
+		{
+			httpCode = http.StatusInternalServerError
+		}
+	}
+	return httpCode
 }
