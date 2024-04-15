@@ -13,18 +13,19 @@ import (
 
 // http rest api server struct
 var (
-	timeout     = time.Second
-	auth_client service.AuthClient
+	timeout = time.Second
 )
 
 type Server struct {
-	config util.Config
-	router *gin.Engine
+	config      util.Config
+	router      *gin.Engine
+	auth_client service.AuthClient
 }
 
 func NewServer(config util.Config) (*Server, error) {
 
-	server := &Server{config: config}
+	authClient := service.NewAuthClient(config)
+	server := &Server{config: config, auth_client: *authClient}
 
 	server.setupRouter()
 
@@ -52,6 +53,9 @@ func (s *Server) setupRouter() {
 	// auth
 	router.POST("/auth/login", s.Login)
 	router.POST("/auth/register", s.Register)
+
+	// users
+	router.GET("/users", s.ListUsers)
 	s.router = router
 }
 func (s *Server) Start(address string) error {
@@ -59,8 +63,7 @@ func (s *Server) Start(address string) error {
 	ctx := context.Background()
 
 	// try to connect auth service
-	authClient := service.AuthClient{}
-	if err := authClient.PrepareAuthGrpcClient(&ctx); err != nil {
+	if err := s.auth_client.PrepareAuthGrpcClient(&ctx); err != nil {
 		return err
 	}
 

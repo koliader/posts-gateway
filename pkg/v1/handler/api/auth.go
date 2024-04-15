@@ -18,7 +18,7 @@ func (s *Server) Login(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, err := auth_client.Login(&c, req)
+	res, err := s.auth_client.Login(&c, req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -36,7 +36,20 @@ func (s *Server) Register(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, err := auth_client.Register(&c, req)
+	res, err := s.auth_client.Register(&c, req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (s *Server) ListUsers(ctx *gin.Context) {
+
+	c, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	res, err := s.auth_client.ListUsers(&c)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

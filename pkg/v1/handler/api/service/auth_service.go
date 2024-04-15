@@ -30,7 +30,13 @@ var (
 
 type AuthClient struct {
 	pb.UnimplementedAuthServer
-	config util.Config
+	config util.Config // Add a config field
+}
+
+func NewAuthClient(config util.Config) *AuthClient {
+	return &AuthClient{
+		config: config,
+	}
 }
 
 func (ac *AuthClient) PrepareAuthGrpcClient(c *context.Context) error {
