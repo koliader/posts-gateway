@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-option go_package = "github.com/koliader/posts-gateway";
+option go_package = "github.com/koliader/posts-gateway/internal/pb";
 import "google/api/annotations.proto";
 
-service Auth{
-  rpc Resgietr(RegisterReq) returns (AuthRes) {
+service Auth {
+  rpc Register(RegisterReq) returns (AuthRes) {
     option (google.api.http) = {
       post: "/v1/auth/register"
       body: "*"
@@ -30,6 +30,5 @@ message RegisterReq {
 
 message LoginReq {
   string Email = 1;
-  string Password = 3;
+  string Password = 2;
 }
-

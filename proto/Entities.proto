@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/koliader/posts-gateway";
+option go_package = "github.com/koliader/posts-gateway/internal/pb";
 
 message UserEntity {
   string Email = 1;
