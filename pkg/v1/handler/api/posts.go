@@ -24,3 +24,33 @@ func (s *Server) createPost(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, res.Post)
 }
+
+func (s *Server) getPost(ctx *gin.Context) {
+	var req service.GetPostReq
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorInvalidArguments(err))
+		return
+	}
+
+	c, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	res, code, err := s.posts_client.GetPost(&c, req)
+	if err != nil {
+		ctx.JSON(errorCode(code), errorResponse(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, res.Post)
+}
+
+func (s *Server) listPosts(ctx *gin.Context) {
+	c, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	res, code, err := s.posts_client.ListPosts(&c)
+	if err != nil {
+		ctx.JSON(errorCode(code), errorResponse(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, res.Posts)
+}

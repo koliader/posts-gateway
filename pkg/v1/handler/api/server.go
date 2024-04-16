@@ -1,13 +1,8 @@
 package api
 
 import (
-	"context"
 	"net/http"
-	"os"
 	"time"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -63,24 +58,10 @@ func (s *Server) setupRouter() {
 
 	// posts
 	router.POST("/posts", s.createPost)
-	// router
+	router.GET("/posts/:title", s.getPost)
+	router.GET("/posts", s.listPosts)
 	s.router = router
 }
 func (s *Server) Start(address string) error {
-	ctx := context.Background()
-
-	if err := s.auth_client.PrepareAuthGrpcClient(&ctx); err != nil {
-		log.Error().Err(err).Msg("failed to connect to auth service")
-		return err
-	}
-
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	log.Info().Msg("auth service connected")
-
-	if err := s.posts_client.PreparePostsGrpcClient(&ctx); err != nil {
-		log.Error().Err(err).Msg("failed to connect to posts service")
-		return err
-	}
-
 	return s.router.Run(address)
 }
