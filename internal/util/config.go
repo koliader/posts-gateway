@@ -6,9 +6,10 @@ import (
 )
 
 type Config struct {
-	GinMode         string `mapstructure:"GIN_MODE"`
-	AuthGrpcService string `mapstructure:"AUTH_GRPC_SERVICE"`
-	ServerAddress   string `mapstructure:"SERVER_ADDRESS"`
+	GinMode          string `mapstructure:"GIN_MODE"`
+	AuthGrpcService  string `mapstructure:"AUTH_GRPC_SERVICE"`
+	PostsGrpcService string `mapstructure:"POSTS_GRPC_SERVICE"`
+	ServerAddress    string `mapstructure:"SERVER_ADDRESS"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

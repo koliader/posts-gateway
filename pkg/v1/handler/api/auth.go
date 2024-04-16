@@ -20,7 +20,7 @@ func (s *Server) login(ctx *gin.Context) {
 
 	res, code, err := s.auth_client.Login(&c, req)
 	if err != nil {
-		ctx.JSON(errorCode(*code), errorResponse(err))
+		ctx.JSON(errorCode(code), errorResponse(err))
 		return
 	}
 	ctx.JSON(http.StatusOK, res)
@@ -38,7 +38,7 @@ func (s *Server) register(ctx *gin.Context) {
 
 	res, code, err := s.auth_client.Register(&c, req)
 	if err != nil {
-		ctx.JSON(errorCode(*code), errorResponse(err))
+		ctx.JSON(errorCode(code), errorResponse(err))
 		return
 	}
 
@@ -52,7 +52,7 @@ func (s *Server) listUsers(ctx *gin.Context) {
 
 	res, code, err := s.auth_client.ListUsers(&c)
 	if err != nil {
-		ctx.JSON(errorCode(*code), errorResponse(err))
+		ctx.JSON(errorCode(code), errorResponse(err))
 		return
 	}
 	ctx.JSON(http.StatusOK, res.Users)

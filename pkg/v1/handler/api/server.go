@@ -21,15 +21,17 @@ var (
 )
 
 type Server struct {
-	config      util.Config
-	router      *gin.Engine
-	auth_client service.AuthClient
+	config       util.Config
+	router       *gin.Engine
+	auth_client  service.AuthClient
+	posts_client service.PostsClient
 }
 
 func NewServer(config util.Config) (*Server, error) {
 
 	authClient := service.NewAuthClient(config)
-	server := &Server{config: config, auth_client: *authClient}
+	postsClient := service.NewPostsClient(config)
+	server := &Server{config: config, auth_client: *authClient, posts_client: *postsClient}
 	server.setupRouter()
 	return server, nil
 }
@@ -58,6 +60,10 @@ func (s *Server) setupRouter() {
 
 	// users
 	router.GET("/users", s.listUsers)
+
+	// posts
+	router.POST("/posts", s.createPost)
+	// router
 	s.router = router
 }
 func (s *Server) Start(address string) error {
@@ -70,6 +76,11 @@ func (s *Server) Start(address string) error {
 
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	log.Info().Msg("auth service connected")
+
+	if err := s.posts_client.PreparePostsGrpcClient(&ctx); err != nil {
+		log.Error().Err(err).Msg("failed to connect to posts service")
+		return err
+	}
 
 	return s.router.Run(address)
 }

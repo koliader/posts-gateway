@@ -60,16 +60,15 @@ func (ac *AuthClient) PrepareAuthGrpcClient(c *context.Context) error {
 		conn.Close()
 		return nil
 	}
-
 	// Success case
 	authGrpcServiceClient = pb.NewAuthClient(conn)
 	return nil
 }
 
 // * this functions calls gRPC service function
-func (ac *AuthClient) Register(c *context.Context, req RegisterReq) (res *pb.AuthRes, code *codes.Code, err error) {
+func (ac *AuthClient) Register(ctx *context.Context, req RegisterReq) (res *pb.AuthRes, code *codes.Code, err error) {
 	// connect auth grpc service
-	if err := ac.PrepareAuthGrpcClient(c); err != nil {
+	if err := ac.PrepareAuthGrpcClient(ctx); err != nil {
 		return nil, nil, err
 	}
 
@@ -79,12 +78,12 @@ func (ac *AuthClient) Register(c *context.Context, req RegisterReq) (res *pb.Aut
 		Password: req.Password,
 	}
 	// res returns token
-	res, err = authGrpcServiceClient.Register(*c, &arg)
+	res, err = authGrpcServiceClient.Register(*ctx, &arg)
 	if err != nil {
 		grpcStatus, _ := status.FromError(err)
 		grpcCode := grpcStatus.Code()
 
-		return nil, &grpcCode, errors.New(status.Convert(err).Message())
+		return nil, &grpcCode, errorResponse(err)
 	}
 	// returning res
 	return res, nil, nil
@@ -103,7 +102,7 @@ func (ac *AuthClient) Login(ctx *context.Context, req LoginReq) (res *pb.AuthRes
 	res, err = authGrpcServiceClient.Login(*ctx, &arg)
 	if err != nil {
 		grpcCode := getErrorCode(err)
-		return nil, &grpcCode, errors.New(status.Convert(err).Message())
+		return nil, &grpcCode, errorResponse(err)
 	}
 	return res, nil, nil
 }
@@ -117,7 +116,7 @@ func (ac *AuthClient) ListUsers(ctx *context.Context) (res *pb.ListUsersRes, cod
 	res, err = authGrpcServiceClient.ListUsers(*ctx, &arg)
 	if err != nil {
 		grpcCode := getErrorCode(err)
-		return nil, &grpcCode, errors.New(status.Convert(err).Message())
+		return nil, &grpcCode, errorResponse(err)
 	}
 	return res, nil, nil
 }

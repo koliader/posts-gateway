@@ -73,16 +73,19 @@ func errorInvalidArguments(err error) gin.H {
 	return gin.H{"error": err.Error()}
 }
 
-func errorCode(code codes.Code) int {
-	var httpCode int
-	switch code {
-	case codes.AlreadyExists:
-		{
-			httpCode = http.StatusBadRequest
-		}
-	case codes.Unimplemented:
-		{
-			httpCode = http.StatusInternalServerError
+func errorCode(code *codes.Code) int {
+	// var httpCode int
+	httpCode := http.StatusInternalServerError
+	if code != nil {
+		switch *code {
+		case codes.AlreadyExists:
+			{
+				httpCode = http.StatusBadRequest
+			}
+		case codes.Unimplemented:
+			{
+				httpCode = http.StatusInternalServerError
+			}
 		}
 	}
 	return httpCode
