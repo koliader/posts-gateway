@@ -8,7 +8,7 @@ import (
 	"github.com/koliader/posts-gateway/pkg/v1/handler/api/service"
 )
 
-func (s *Server) Login(ctx *gin.Context) {
+func (s *Server) login(ctx *gin.Context) {
 	var req service.LoginReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorInvalidArguments(err))
@@ -18,7 +18,7 @@ func (s *Server) Login(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, err, code := s.auth_client.Login(&c, req)
+	res, code, err := s.auth_client.Login(&c, req)
 	if err != nil {
 		ctx.JSON(errorCode(*code), errorResponse(err))
 		return
@@ -28,7 +28,7 @@ func (s *Server) Login(ctx *gin.Context) {
 	})
 }
 
-func (s *Server) Register(ctx *gin.Context) {
+func (s *Server) register(ctx *gin.Context) {
 	var req service.RegisterReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorInvalidArguments(err))
@@ -38,7 +38,7 @@ func (s *Server) Register(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, err, code := s.auth_client.Register(&c, req)
+	res, code, err := s.auth_client.Register(&c, req)
 	if err != nil {
 		ctx.JSON(errorCode(*code), errorResponse(err))
 		return
@@ -49,15 +49,15 @@ func (s *Server) Register(ctx *gin.Context) {
 	})
 }
 
-func (s *Server) ListUsers(ctx *gin.Context) {
+func (s *Server) listUsers(ctx *gin.Context) {
 
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, err, code := s.auth_client.ListUsers(&c)
+	res, code, err := s.auth_client.ListUsers(&c)
 	if err != nil {
 		ctx.JSON(errorCode(*code), errorResponse(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, res)
+	ctx.JSON(http.StatusOK, res.Users)
 }
