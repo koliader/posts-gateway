@@ -23,9 +23,7 @@ func (s *Server) login(ctx *gin.Context) {
 		ctx.JSON(errorCode(*code), errorResponse(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, service.AuthRes{
-		Token: res.Token,
-	})
+	ctx.JSON(http.StatusOK, res)
 }
 
 func (s *Server) register(ctx *gin.Context) {
@@ -44,9 +42,7 @@ func (s *Server) register(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, service.AuthRes{
-		Token: res.Token,
-	})
+	ctx.JSON(http.StatusOK, res)
 }
 
 func (s *Server) listUsers(ctx *gin.Context) {

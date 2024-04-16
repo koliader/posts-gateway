@@ -10,18 +10,18 @@ service Auth {
 }
 
 message AuthRes {
-  string Token = 1;
+  string token = 1;
 }
 
 message RegisterReq {
-  string Email = 1;
-  string Username = 2;
-  string Password = 3;
+  string email = 1;
+  string username = 2;
+  string password = 3;
 }
 
 message LoginReq {
-  string Email = 1;
-  string Password = 2;
+  string email = 1;
+  string password = 2;
 }
 
 message ListUsersRes {
