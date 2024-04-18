@@ -28,6 +28,15 @@ type LoginReq struct {
 	Password string `json:"password" binding:"required,min=3"`
 }
 
+type GetUserByEmailReq struct {
+	Email string `uri:"email" binding:"required,email"`
+}
+
+type UpdateUserEmailReq struct {
+	Email   string
+	NewEmil string
+}
+
 var (
 	authGrpcServiceClient pb.AuthClient
 )
@@ -81,9 +90,9 @@ func (ac *AuthClient) Register(ctx *context.Context, req RegisterReq) (res *pb.A
 	res, err = authGrpcServiceClient.Register(*ctx, &arg)
 	if err != nil {
 		grpcStatus, _ := status.FromError(err)
-		grpcCode := grpcStatus.Code()
+		code := grpcStatus.Code()
 
-		return nil, &grpcCode, errorResponse(err)
+		return nil, &code, errorResponse(err)
 	}
 	// returning res
 	return res, nil, nil
@@ -101,8 +110,8 @@ func (ac *AuthClient) Login(ctx *context.Context, req LoginReq) (res *pb.AuthRes
 	}
 	res, err = authGrpcServiceClient.Login(*ctx, &arg)
 	if err != nil {
-		grpcCode := getErrorCode(err)
-		return nil, &grpcCode, errorResponse(err)
+		code := getErrorCode(err)
+		return nil, &code, errorResponse(err)
 	}
 	return res, nil, nil
 }
@@ -115,8 +124,40 @@ func (ac *AuthClient) ListUsers(ctx *context.Context) (res *pb.ListUsersRes, cod
 	arg := pb.Empty{}
 	res, err = authGrpcServiceClient.ListUsers(*ctx, &arg)
 	if err != nil {
-		grpcCode := getErrorCode(err)
-		return nil, &grpcCode, errorResponse(err)
+		code := getErrorCode(err)
+		return nil, &code, errorResponse(err)
+	}
+	return res, nil, nil
+}
+
+func (ac *AuthClient) GetUserByEmail(ctx *context.Context, req GetUserByEmailReq) (res *pb.UserRes, code *codes.Code, err error) {
+	if err := ac.PrepareAuthGrpcClient(ctx); err != nil {
+		return nil, nil, err
+	}
+
+	arg := pb.GetUserByEmailReq{
+		Email: req.Email,
+	}
+	res, err = authGrpcServiceClient.GetUserByEmail(*ctx, &arg)
+	if err != nil {
+		code := getErrorCode(err)
+		return nil, &code, errorResponse(err)
+	}
+	return res, nil, nil
+}
+
+func (ac *AuthClient) UpdateUserEmail(ctx *context.Context, req UpdateUserEmailReq) (res *pb.UserRes, codes *codes.Code, err error) {
+	if err := ac.PrepareAuthGrpcClient(ctx); err != nil {
+		return nil, nil, err
+	}
+	arg := pb.UpdateUserEmailReq{
+		Email:    req.Email,
+		NewEmail: req.NewEmil,
+	}
+	res, err = authGrpcServiceClient.UpdateUserEmail(*ctx, &arg)
+	if err != nil {
+		code := getErrorCode(err)
+		return nil, &code, errorResponse(err)
 	}
 	return res, nil, nil
 }

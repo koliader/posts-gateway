@@ -54,3 +54,21 @@ func (s *Server) listPosts(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, res.Posts)
 }
+
+func (s *Server) listPostsByUser(ctx *gin.Context) {
+	var req service.ListPostsByUserReq
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorInvalidArguments(err))
+		return
+	}
+	c, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	res, code, err := s.posts_client.ListPostsByUser(&c, req)
+
+	if err != nil {
+		ctx.JSON(errorCode(code), errorResponse(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, res.Posts)
+}

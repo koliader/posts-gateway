@@ -10,6 +10,7 @@ type Config struct {
 	AuthGrpcService  string `mapstructure:"AUTH_GRPC_SERVICE"`
 	PostsGrpcService string `mapstructure:"POSTS_GRPC_SERVICE"`
 	ServerAddress    string `mapstructure:"SERVER_ADDRESS"`
+	Environment      string `mapstructure:"ENVIRONMENT"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

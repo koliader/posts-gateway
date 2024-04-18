@@ -1,0 +1,73 @@
+version: "3.9"
+services:
+  auth_postgres:
+    image: postgres:12-alpine
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=postsAuth
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d postsAuth -U root"]
+      interval: 5s
+      timeout: 20s
+      retries: 100
+
+  auth_api:
+    build:
+      context: ../posts-auth
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8080"
+    environment:
+      - DB_SOURCE=postgresql://root:secret@auth_postgres:5432/postsAuth?sslmode=disable
+    depends_on:
+      auth_postgres:
+        condition: service_healthy
+    entrypoint: ["/app/start.sh"]
+    command: ["/app/main"]
+
+  posts_postgres:
+    image: postgres:12-alpine
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=postsPosts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d postsPosts -U root"]
+      interval: 5s
+      timeout: 20s
+      retries: 100
+
+  posts_api:
+    build:
+      context: ../posts-post
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8080"
+    environment:
+      - DB_SOURCE=postgresql://root:secret@posts_postgres:5432/postsPosts?sslmode=disable
+    depends_on:
+      posts_postgres:
+        condition: service_healthy
+    entrypoint: ["/app/start.sh"]
+    command: ["/app/main"]
+
+  gateway_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - GIN_MODE=debug
+      - AUTH_GRPC_SERVICE=localhost:8081
+      - POSTS_GRPC_SERVICE=localhost:8082
+      - SERVER_ADDRESS=0.0.0.0:8080
+      - ENVIRONMENT=dev
+    depends_on:
+      auth_api:
+        condition: service_started
+      posts_api:
+        condition: service_started
+    entrypoint: ["/app/start.sh"]
+    command: ["/app/main"]

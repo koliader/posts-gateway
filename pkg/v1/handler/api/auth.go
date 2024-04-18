@@ -5,8 +5,22 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/koliader/posts-gateway/internal/pb"
 	"github.com/koliader/posts-gateway/pkg/v1/handler/api/service"
 )
+
+type convertedUser struct {
+	Email    string `json:"email" binding:"required,email"`
+	Username string `json:"username" binding:"required"`
+}
+
+func (s *Server) convertUser(user *pb.UserEntity) *convertedUser {
+	converted := convertedUser{
+		Email:    user.Email,
+		Username: user.Username,
+	}
+	return &converted
+}
 
 func (s *Server) login(ctx *gin.Context) {
 	var req service.LoginReq
@@ -46,7 +60,7 @@ func (s *Server) register(ctx *gin.Context) {
 }
 
 func (s *Server) listUsers(ctx *gin.Context) {
-
+	var converted []convertedUser
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -55,5 +69,57 @@ func (s *Server) listUsers(ctx *gin.Context) {
 		ctx.JSON(errorCode(code), errorResponse(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, res.Users)
+	for _, user := range res.Users {
+		converted = append(converted, *s.convertUser(user))
+	}
+	ctx.JSON(http.StatusOK, converted)
+}
+
+func (s *Server) getUserByEmail(ctx *gin.Context) {
+
+	var req service.GetUserByEmailReq
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorInvalidArguments(err))
+		return
+	}
+	c, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	res, code, err := s.auth_client.GetUserByEmail(&c, req)
+	if err != nil {
+		ctx.JSON(errorCode(code), errorResponse(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, s.convertUser(res.User))
+}
+
+type updateUserEmailUriReq struct {
+	Email string `uri:"email" binding:"required,email"`
+}
+
+type updateUserEmailJsonReq struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+func (s *Server) updateUserEmail(ctx *gin.Context) {
+	var uriReq updateUserEmailUriReq
+	var jsonReq updateUserEmailJsonReq
+	if err := ctx.ShouldBindUri(&uriReq); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorInvalidArguments(err))
+	}
+	if err := ctx.ShouldBindJSON(&jsonReq); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorInvalidArguments(err))
+	}
+	c, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	req := service.UpdateUserEmailReq{
+		Email:   uriReq.Email,
+		NewEmil: jsonReq.Email,
+	}
+	_, code, err := s.auth_client.UpdateUserEmail(&c, req)
+	if err != nil {
+		ctx.JSON(errorCode(code), errorResponse(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, Success{true})
 }

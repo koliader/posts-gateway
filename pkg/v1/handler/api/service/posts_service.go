@@ -25,6 +25,10 @@ type GetPostReq struct {
 	Title string `uri:"title" binding:"required"`
 }
 
+type ListPostsByUserReq struct {
+	Email string `uri:"email" binding:"required,email"`
+}
+
 type PostsClient struct {
 	pb.UnimplementedPostServer
 	config util.Config
@@ -37,6 +41,8 @@ func NewPostsClient(config util.Config) *PostsClient {
 }
 
 func (pc *PostsClient) PreparePostsGrpcClient(c *context.Context) error {
+	fmt.Println(pc.config.PostsGrpcService)
+	fmt.Println(pc.config.AuthGrpcService)
 	conn, err := grpc.DialContext(*c, pc.config.PostsGrpcService, []grpc.DialOption{
 		grpc.WithInsecure(),
 		grpc.WithBlock()}...)
@@ -61,7 +67,6 @@ func (pc *PostsClient) CreatePost(c *context.Context, req CreatePostReq) (res *p
 	if err := pc.PreparePostsGrpcClient(c); err != nil {
 		return nil, nil, err
 	}
-	// TODO: check owner is exists
 	arg := pb.CreatePostReq{
 		Owner: req.Owner,
 		Title: req.Title,
@@ -70,8 +75,8 @@ func (pc *PostsClient) CreatePost(c *context.Context, req CreatePostReq) (res *p
 
 	res, err = postsGrpcServiceClient.CreatePost(*c, &arg)
 	if err != nil {
-		grpcCode := getErrorCode(err)
-		return nil, &grpcCode, errorResponse(err)
+		code := getErrorCode(err)
+		return nil, &code, errorResponse(err)
 	}
 	return res, nil, nil
 }
@@ -86,8 +91,8 @@ func (pc *PostsClient) GetPost(c *context.Context, req GetPostReq) (res *pb.GetP
 	}
 	res, err = postsGrpcServiceClient.GetPost(*c, &arg)
 	if err != nil {
-		grpcCode := getErrorCode(err)
-		return nil, &grpcCode, errorResponse(err)
+		code := getErrorCode(err)
+		return nil, &code, errorResponse(err)
 	}
 	return res, nil, nil
 }
@@ -98,9 +103,24 @@ func (pc *PostsClient) ListPosts(c *context.Context) (res *pb.ListPostsRes, code
 	}
 	res, err = postsGrpcServiceClient.ListPosts(*c, &pb.Empty{})
 	if err != nil {
-		grpcCode := getErrorCode(err)
-		return nil, &grpcCode, errorResponse(err)
+		code := getErrorCode(err)
+		return nil, &code, errorResponse(err)
 	}
 
+	return res, nil, nil
+}
+
+func (pc *PostsClient) ListPostsByUser(c *context.Context, req ListPostsByUserReq) (res *pb.ListPostsRes, code *codes.Code, err error) {
+	if err := pc.PreparePostsGrpcClient(c); err != nil {
+		return nil, nil, err
+	}
+	arg := pb.ListPostsByUserReq{
+		Owner: req.Email,
+	}
+	res, err = postsGrpcServiceClient.ListPostsByUser(*c, &arg)
+	if err != nil {
+		code := getErrorCode(err)
+		return nil, &code, errorResponse(err)
+	}
 	return res, nil, nil
 }

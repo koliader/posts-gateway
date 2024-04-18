@@ -2,11 +2,16 @@ syntax = "proto3";
 
 option go_package = "github.com/koliader/posts-gateway/internal/pb";
 import "Entities.proto";
-
 service Auth {
   rpc Register(RegisterReq) returns (AuthRes) {}
   rpc Login(LoginReq) returns (AuthRes) {}
   rpc ListUsers(Empty) returns (ListUsersRes) {}
+  rpc GetUserByEmail(GetUserByEmailReq) returns(UserRes) {}
+  rpc UpdateUserEmail(UpdateUserEmailReq) returns (UserRes) {}
+}
+
+message UserRes {
+  UserEntity user = 1;
 }
 
 message AuthRes {
@@ -26,4 +31,13 @@ message LoginReq {
 
 message ListUsersRes {
   repeated UserEntity users = 1;
+}
+
+message GetUserByEmailReq {
+  string email = 1;
+}
+
+message UpdateUserEmailReq {
+ string email = 1;
+ string newEmail = 2;
 }

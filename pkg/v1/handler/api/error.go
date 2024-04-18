@@ -86,6 +86,18 @@ func errorCode(code *codes.Code) int {
 			{
 				httpCode = http.StatusInternalServerError
 			}
+		case codes.Internal:
+			{
+				httpCode = http.StatusInternalServerError
+			}
+		case codes.NotFound:
+			{
+				httpCode = http.StatusNotFound
+			}
+		case codes.Unauthenticated:
+			{
+				httpCode = http.StatusUnauthorized
+			}
 		}
 	}
 	return httpCode

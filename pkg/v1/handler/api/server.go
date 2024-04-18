@@ -55,13 +55,21 @@ func (s *Server) setupRouter() {
 
 	// users
 	router.GET("/users", s.listUsers)
+	router.GET("/users/:email", s.getUserByEmail)
+	router.PUT("/users/:email", s.updateUserEmail)
 
 	// posts
 	router.POST("/posts", s.createPost)
 	router.GET("/posts/:title", s.getPost)
 	router.GET("/posts", s.listPosts)
+	router.GET("/posts/byUser/:email", s.listPostsByUser)
+
 	s.router = router
 }
 func (s *Server) Start(address string) error {
 	return s.router.Run(address)
+}
+
+type Success struct {
+	Success bool `json:"success"`
 }
