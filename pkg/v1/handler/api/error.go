@@ -98,6 +98,10 @@ func errorCode(code *codes.Code) int {
 			{
 				httpCode = http.StatusUnauthorized
 			}
+		case codes.PermissionDenied:
+			{
+				httpCode = http.StatusUnauthorized
+			}
 		}
 	}
 	return httpCode
