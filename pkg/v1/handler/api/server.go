@@ -16,17 +16,16 @@ var (
 )
 
 type Server struct {
-	config       util.Config
-	router       *gin.Engine
-	auth_client  service.AuthClient
-	posts_client service.PostsClient
+	config      util.Config
+	router      *gin.Engine
+	authClient  service.AuthClient
+	postsClient service.PostsClient
 }
 
 func NewServer(config util.Config) (*Server, error) {
-
 	authClient := service.NewAuthClient(config)
 	postsClient := service.NewPostsClient(config)
-	server := &Server{config: config, auth_client: *authClient, posts_client: *postsClient}
+	server := &Server{config: config, authClient: *authClient, postsClient: *postsClient}
 	server.setupRouter()
 	return server, nil
 }
@@ -48,6 +47,7 @@ func (s *Server) setupRouter() {
 	})
 
 	router.Use(c)
+	authRoutes := router.Group("/").Use(authMiddleware())
 
 	// auth
 	router.POST("/auth/login", s.login)
@@ -56,13 +56,13 @@ func (s *Server) setupRouter() {
 	// users
 	router.GET("/users", s.listUsers)
 	router.GET("/users/:email", s.getUserByEmail)
-	router.PUT("/users/:email", s.updateUserEmail)
+	authRoutes.PUT("/users/:email", s.updateUserEmail)
 
 	// posts
-	router.POST("/posts", s.createPost)
 	router.GET("/posts/:title", s.getPost)
 	router.GET("/posts", s.listPosts)
 	router.GET("/posts/byUser/:email", s.listPostsByUser)
+	authRoutes.POST("/posts", s.createPost)
 
 	s.router = router
 }

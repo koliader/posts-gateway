@@ -32,7 +32,7 @@ func (s *Server) login(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, code, err := s.auth_client.Login(&c, req)
+	res, code, err := s.authClient.Login(&c, req)
 	if err != nil {
 		ctx.JSON(errorCode(code), errorResponse(err))
 		return
@@ -50,7 +50,7 @@ func (s *Server) register(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, code, err := s.auth_client.Register(&c, req)
+	res, code, err := s.authClient.Register(&c, req)
 	if err != nil {
 		ctx.JSON(errorCode(code), errorResponse(err))
 		return
@@ -64,7 +64,7 @@ func (s *Server) listUsers(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, code, err := s.auth_client.ListUsers(&c)
+	res, code, err := s.authClient.ListUsers(&c)
 	if err != nil {
 		ctx.JSON(errorCode(code), errorResponse(err))
 		return
@@ -85,7 +85,7 @@ func (s *Server) getUserByEmail(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, code, err := s.auth_client.GetUserByEmail(&c, req)
+	res, code, err := s.authClient.GetUserByEmail(&c, req)
 	if err != nil {
 		ctx.JSON(errorCode(code), errorResponse(err))
 		return
@@ -116,7 +116,11 @@ func (s *Server) updateUserEmail(ctx *gin.Context) {
 		Email:   uriReq.Email,
 		NewEmil: jsonReq.Email,
 	}
-	_, code, err := s.auth_client.UpdateUserEmail(&c, req)
+	authPayload := ctx.MustGet(authorizationPayloadKey).(string)
+	headers := service.AuthHeaders{
+		Token: authPayload,
+	}
+	_, code, err := s.authClient.UpdateUserEmail(&c, req, headers)
 	if err != nil {
 		ctx.JSON(errorCode(code), errorResponse(err))
 		return

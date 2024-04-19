@@ -17,7 +17,7 @@ func (s *Server) createPost(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, code, err := s.posts_client.CreatePost(&c, req)
+	res, code, err := s.postsClient.CreatePost(&c, req)
 	if err != nil {
 		ctx.JSON(errorCode(code), errorResponse(err))
 		return
@@ -35,7 +35,7 @@ func (s *Server) getPost(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, code, err := s.posts_client.GetPost(&c, req)
+	res, code, err := s.postsClient.GetPost(&c, req)
 	if err != nil {
 		ctx.JSON(errorCode(code), errorResponse(err))
 		return
@@ -47,7 +47,7 @@ func (s *Server) listPosts(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, code, err := s.posts_client.ListPosts(&c)
+	res, code, err := s.postsClient.ListPosts(&c)
 	if err != nil {
 		ctx.JSON(errorCode(code), errorResponse(err))
 		return
@@ -64,7 +64,7 @@ func (s *Server) listPostsByUser(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, code, err := s.posts_client.ListPostsByUser(&c, req)
+	res, code, err := s.postsClient.ListPostsByUser(&c, req)
 
 	if err != nil {
 		ctx.JSON(errorCode(code), errorResponse(err))

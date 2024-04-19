@@ -9,8 +9,14 @@ import (
 	"github.com/koliader/posts-gateway/internal/util"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
+
+// * headers
+type AuthHeaders struct {
+	Token string
+}
 
 // * requests
 type AuthRes struct {
@@ -73,9 +79,8 @@ func (ac *AuthClient) PrepareAuthGrpcClient(c *context.Context) error {
 	authGrpcServiceClient = pb.NewAuthClient(conn)
 	return nil
 }
-
-// * this functions calls gRPC service function
 func (ac *AuthClient) Register(ctx *context.Context, req RegisterReq) (res *pb.AuthRes, code *codes.Code, err error) {
+
 	// connect auth grpc service
 	if err := ac.PrepareAuthGrpcClient(ctx); err != nil {
 		return nil, nil, err
@@ -97,7 +102,6 @@ func (ac *AuthClient) Register(ctx *context.Context, req RegisterReq) (res *pb.A
 	// returning res
 	return res, nil, nil
 }
-
 func (ac *AuthClient) Login(ctx *context.Context, req LoginReq) (res *pb.AuthRes, code *codes.Code, err error) {
 	// connect auth grpc service
 	if err := ac.PrepareAuthGrpcClient(ctx); err != nil {
@@ -146,7 +150,15 @@ func (ac *AuthClient) GetUserByEmail(ctx *context.Context, req GetUserByEmailReq
 	return res, nil, nil
 }
 
-func (ac *AuthClient) UpdateUserEmail(ctx *context.Context, req UpdateUserEmailReq) (res *pb.UserRes, codes *codes.Code, err error) {
+func (ac *AuthClient) UpdateUserEmail(ctx *context.Context, req UpdateUserEmailReq, headers AuthHeaders) (res *pb.UserRes, codes *codes.Code, err error) {
+	// Create metadata with headers
+	md := metadata.New(map[string]string{
+		"authorization": headers.Token,
+	})
+
+	// Attach metadata to context
+	ctxWithMetadata := metadata.NewOutgoingContext(*ctx, md)
+
 	if err := ac.PrepareAuthGrpcClient(ctx); err != nil {
 		return nil, nil, err
 	}
@@ -154,7 +166,7 @@ func (ac *AuthClient) UpdateUserEmail(ctx *context.Context, req UpdateUserEmailR
 		Email:    req.Email,
 		NewEmail: req.NewEmil,
 	}
-	res, err = authGrpcServiceClient.UpdateUserEmail(*ctx, &arg)
+	res, err = authGrpcServiceClient.UpdateUserEmail(ctxWithMetadata, &arg)
 	if err != nil {
 		code := getErrorCode(err)
 		return nil, &code, errorResponse(err)
