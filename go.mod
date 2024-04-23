@@ -5,6 +5,7 @@ go 1.22.2
 require (
 	github.com/gin-contrib/cors v1.7.1
 	github.com/gin-gonic/gin v1.9.1
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/rs/zerolog v1.32.0
 	github.com/spf13/viper v1.18.2
 	google.golang.org/grpc v1.61.0

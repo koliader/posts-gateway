@@ -14,8 +14,8 @@ import (
 )
 
 // * headers
-type AuthHeaders struct {
-	Token string
+type TokenHeader struct {
+	Email string
 }
 
 // * requests
@@ -39,7 +39,6 @@ type GetUserByEmailReq struct {
 }
 
 type UpdateUserEmailReq struct {
-	Email   string
 	NewEmil string
 }
 
@@ -150,10 +149,9 @@ func (ac *AuthClient) GetUserByEmail(ctx *context.Context, req GetUserByEmailReq
 	return res, nil, nil
 }
 
-func (ac *AuthClient) UpdateUserEmail(ctx *context.Context, req UpdateUserEmailReq, headers AuthHeaders) (res *pb.UserRes, codes *codes.Code, err error) {
-	// Create metadata with headers
+func (ac *AuthClient) UpdateUserEmail(ctx *context.Context, req UpdateUserEmailReq, header TokenHeader) (res *pb.UserRes, codes *codes.Code, err error) {
 	md := metadata.New(map[string]string{
-		"authorization": headers.Token,
+		"authorization": header.Email,
 	})
 
 	// Attach metadata to context
@@ -163,7 +161,6 @@ func (ac *AuthClient) UpdateUserEmail(ctx *context.Context, req UpdateUserEmailR
 		return nil, nil, err
 	}
 	arg := pb.UpdateUserEmailReq{
-		Email:    req.Email,
 		NewEmail: req.NewEmil,
 	}
 	res, err = authGrpcServiceClient.UpdateUserEmail(ctxWithMetadata, &arg)

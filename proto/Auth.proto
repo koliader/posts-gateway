@@ -38,6 +38,5 @@ message GetUserByEmailReq {
 }
 
 message UpdateUserEmailReq {
- string email = 1;
- string newEmail = 2;
-}
+  string newEmail = 2;
+ }

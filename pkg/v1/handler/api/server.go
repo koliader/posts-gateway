@@ -1,11 +1,13 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/koliader/posts-gateway/internal/token"
 	"github.com/koliader/posts-gateway/internal/util"
 	"github.com/koliader/posts-gateway/pkg/v1/handler/api/service"
 )
@@ -20,12 +22,17 @@ type Server struct {
 	router      *gin.Engine
 	authClient  service.AuthClient
 	postsClient service.PostsClient
+	tokenMaker  token.Maker
 }
 
 func NewServer(config util.Config) (*Server, error) {
 	authClient := service.NewAuthClient(config)
 	postsClient := service.NewPostsClient(config)
-	server := &Server{config: config, authClient: *authClient, postsClient: *postsClient}
+	tokenMaker, err := token.NewJWTMaker(config.TokenKey)
+	if err != nil {
+		return nil, fmt.Errorf("error to create jwt make: %v", err)
+	}
+	server := &Server{config: config, authClient: *authClient, postsClient: *postsClient, tokenMaker: tokenMaker}
 	server.setupRouter()
 	return server, nil
 }
@@ -47,7 +54,7 @@ func (s *Server) setupRouter() {
 	})
 
 	router.Use(c)
-	authRoutes := router.Group("/").Use(authMiddleware())
+	authRoutes := router.Group("/").Use(s.authMiddleware())
 
 	// auth
 	router.POST("/auth/login", s.login)
@@ -56,7 +63,7 @@ func (s *Server) setupRouter() {
 	// users
 	router.GET("/users", s.listUsers)
 	router.GET("/users/:email", s.getUserByEmail)
-	authRoutes.PUT("/users/:email", s.updateUserEmail)
+	authRoutes.PUT("/users", s.updateUserEmail)
 
 	// posts
 	router.GET("/posts/:title", s.getPost)

@@ -93,32 +93,23 @@ func (s *Server) getUserByEmail(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, s.convertUser(res.User))
 }
 
-type updateUserEmailUriReq struct {
-	Email string `uri:"email" binding:"required,email"`
-}
-
 type updateUserEmailJsonReq struct {
 	Email string `json:"email" binding:"required,email"`
 }
 
 func (s *Server) updateUserEmail(ctx *gin.Context) {
-	var uriReq updateUserEmailUriReq
 	var jsonReq updateUserEmailJsonReq
-	if err := ctx.ShouldBindUri(&uriReq); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorInvalidArguments(err))
-	}
 	if err := ctx.ShouldBindJSON(&jsonReq); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorInvalidArguments(err))
 	}
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	req := service.UpdateUserEmailReq{
-		Email:   uriReq.Email,
 		NewEmil: jsonReq.Email,
 	}
 	authPayload := ctx.MustGet(authorizationPayloadKey).(string)
-	headers := service.AuthHeaders{
-		Token: authPayload,
+	headers := service.TokenHeader{
+		Email: authPayload,
 	}
 	_, code, err := s.authClient.UpdateUserEmail(&c, req, headers)
 	if err != nil {

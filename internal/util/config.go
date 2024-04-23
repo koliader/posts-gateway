@@ -11,11 +11,12 @@ type Config struct {
 	PostsGrpcService string `mapstructure:"POSTS_GRPC_SERVICE"`
 	ServerAddress    string `mapstructure:"SERVER_ADDRESS"`
 	Environment      string `mapstructure:"ENVIRONMENT"`
+	TokenKey         string `mapstructure:"TOKEN_KEY"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
+	viper.SetConfigName("example")
 	viper.SetConfigType("env")
 	viper.AutomaticEnv()
 

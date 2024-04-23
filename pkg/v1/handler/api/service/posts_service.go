@@ -9,14 +9,16 @@ import (
 	"github.com/koliader/posts-gateway/internal/util"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 )
 
 var (
 	postsGrpcServiceClient pb.PostClient
 )
 
+// * headers
+
 type CreatePostReq struct {
-	Owner string `json:"owner" binding:"required,email"`
 	Title string `json:"title" binding:"required"`
 	Body  string `json:"body" binding:"required"`
 }
@@ -63,17 +65,22 @@ func (pc *PostsClient) PreparePostsGrpcClient(c *context.Context) error {
 	return nil
 }
 
-func (pc *PostsClient) CreatePost(c *context.Context, req CreatePostReq) (res *pb.CreatePostRes, code *codes.Code, err error) {
+func (pc *PostsClient) CreatePost(c *context.Context, req CreatePostReq, header TokenHeader) (res *pb.CreatePostRes, code *codes.Code, err error) {
+	md := metadata.New(map[string]string{
+		"authorization": header.Email,
+	})
+
+	ctxWithMetadata := metadata.NewOutgoingContext(*c, md)
+
 	if err := pc.PreparePostsGrpcClient(c); err != nil {
 		return nil, nil, err
 	}
 	arg := pb.CreatePostReq{
-		Owner: req.Owner,
 		Title: req.Title,
 		Body:  req.Body,
 	}
 
-	res, err = postsGrpcServiceClient.CreatePost(*c, &arg)
+	res, err = postsGrpcServiceClient.CreatePost(ctxWithMetadata, &arg)
 	if err != nil {
 		code := getErrorCode(err)
 		return nil, &code, errorResponse(err)

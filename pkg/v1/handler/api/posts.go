@@ -17,7 +17,11 @@ func (s *Server) createPost(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, code, err := s.postsClient.CreatePost(&c, req)
+	authPayload := ctx.MustGet(authorizationPayloadKey).(string)
+	headers := service.TokenHeader{
+		Email: authPayload,
+	}
+	res, code, err := s.postsClient.CreatePost(&c, req, headers)
 	if err != nil {
 		ctx.JSON(errorCode(code), errorResponse(err))
 		return

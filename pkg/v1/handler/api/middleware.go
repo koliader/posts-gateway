@@ -15,7 +15,7 @@ const (
 	authorizationPayloadKey = "authorization_payload"
 )
 
-func authMiddleware() gin.HandlerFunc {
+func (s *Server) authMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader(authHeaderKey)
 		if len(authHeader) == 0 {
@@ -35,7 +35,12 @@ func authMiddleware() gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}
-		ctx.Set(authorizationPayloadKey, authHeader)
+		payload, err := s.tokenMaker.VerifyToken(fields[1])
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("error to verify token")))
+			return
+		}
+		ctx.Set(authorizationPayloadKey, payload.Email)
 		ctx.Next()
 
 	}
